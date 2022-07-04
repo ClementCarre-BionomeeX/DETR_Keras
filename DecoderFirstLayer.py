@@ -44,16 +44,16 @@ class DecoderFirstLayer(tf.keras.layers.Layer):
     def call(self, features, spatial_encodings):
         if not self._built_from_signature:
             self._build_from_signature(features)
-
+        queries = tf.repeat([self.proj(self.w)], [tf.shape(features)[0]], axis=0)
         tmp = self.norm1(
             self.attention(
-                query=tf.repeat([self.proj(self.w)], [tf.shape(features)[0]], axis=0),
+                query=queries,
                 key=features + spatial_encodings,
                 value=features,
             )
-            + tf.repeat([self.proj(self.w)], [tf.shape(features)[0]], axis=0)
+            + queries
         )
-        return self.norm2(tmp + self.ffn(tmp))
+        return self.norm2(tmp + self.ffn(tmp)), queries
 
 
 # %%
@@ -61,11 +61,11 @@ if __name__ == "__main__":
     dim = 16
     features = tf.keras.layers.Input(shape=(11, dim), name="features")
     spatial_enc = tf.keras.layers.Input(shape=(11, dim), name="spatial_encodings")
-    constant_input = DecoderFirstLayer(nqueries=17, nheads=2)(
+    decoder, queries = DecoderFirstLayer(nqueries=17, nheads=2)(
         features=features, spatial_encodings=spatial_enc
     )
-    output = tf.keras.layers.Dense(units=1)(constant_input)
-    model = tf.keras.models.Model([features, spatial_enc], [output])
+    output = tf.keras.layers.Dense(units=1)(decoder)
+    model = tf.keras.models.Model([features, spatial_enc], [output, queries])
     model.summary(150)
 
     import numpy as np
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     data_f = np.random.uniform(0, 1, (3, 11, dim))
     data_s = np.random.uniform(0, 1, (3, 11, dim))
 
-    pred = model([data_f, data_s])
+    pred = model([data_f, data_s])[0]
     print(pred)
 
     model.save("test.hdf5")
@@ -83,7 +83,7 @@ if __name__ == "__main__":
         custom_objects={"DecoderFirstLayer": DecoderFirstLayer},
     )
 
-    pred2 = model2([data_f, data_s])
+    pred2 = model2([data_f, data_s])[0]
     print(pred2)
 
     print(np.sum((pred - pred2) ** 2))
@@ -95,13 +95,16 @@ if __name__ == "__main__":
 
     data_X = [
         np.random.uniform(0, 1, (200, 11, dim)),
-        np.random.uniform(0, 1, (200, 11, dim))
+        np.random.uniform(0, 1, (200, 11, dim)),
     ]
-    data_Y = np.random.uniform(0, 1, (200, 17, 1))
+    data_Y = [
+        np.random.uniform(0, 1, (200, 17, 1)),
+        np.random.uniform(0, 1, (200, 17, dim)),
+    ]
 
     model.fit(data_X, data_Y, epochs=5, batch_size=20)
 
-    pred3 = model([data_f, data_s])
+    pred3 = model([data_f, data_s])[0]
 
     print(np.sum((pred - pred3) ** 2))
 
@@ -112,7 +115,7 @@ if __name__ == "__main__":
         custom_objects={"DecoderFirstLayer": DecoderFirstLayer},
     )
 
-    pred4 = model2([data_f, data_s])
+    pred4 = model2([data_f, data_s])[0]
 
     print(np.sum((pred4 - pred3) ** 2))
 
