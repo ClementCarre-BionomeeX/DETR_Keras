@@ -5,7 +5,7 @@ import tensorflow as tf
 
 # use the _build_from_signature tricks:
 # https://github.com/keras-team/keras/blob/v2.9.0/keras/layers/attention/multi_head_attention.py#L306
-class transformer_decoder(tf.keras.layers.Layer):
+class transformer(tf.keras.layers.Layer):
     def __init__(self, nheads, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.nheads = nheads
@@ -14,7 +14,7 @@ class transformer_decoder(tf.keras.layers.Layer):
     def _build_from_signature(self, query, key, value):
         self._built_from_signature = True
         self.attention = tf.keras.layers.MultiHeadAttention(
-            num_heads=self.nheads, key_dim=query.shape[-1] // self.nheads
+            num_heads=self.nheads, key_dim=key.shape[-1] // self.nheads
         )
         self.proj = tf.keras.layers.Dense(value.shape[-1])
 
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     inp1 = tf.keras.layers.Input(shape=(11, 8))
     inp2 = tf.keras.layers.Input(shape=(7, 8))
 
-    test_layer = transformer_decoder(nheads=2)(query=inp1, key=inp2, value=inp2)
+    test_layer = transformer(nheads=2)(query=inp1, key=inp2, value=inp2)
 
     model = tf.keras.models.Model([inp1, inp2], [test_layer])
 
@@ -59,7 +59,7 @@ if __name__ == "__main__":
     model.save("test.hdf5")
 
     model2 = tf.keras.models.load_model(
-        "test.hdf5", custom_objects={"transformer_decoder": transformer_decoder}
+        "test.hdf5", custom_objects={"transformer": transformer}
     )
 
     pred2 = model2([data1, data2])
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     model.save("test2.hdf5")
 
     model2 = tf.keras.models.load_model(
-        "test2.hdf5", custom_objects={"transformer_decoder": transformer_decoder}
+        "test2.hdf5", custom_objects={"transformer": transformer}
     )
 
     pred4 = model([data1, data2])
