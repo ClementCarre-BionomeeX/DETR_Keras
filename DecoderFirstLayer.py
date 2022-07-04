@@ -23,6 +23,7 @@ class DecoderFirstLayer(tf.keras.layers.Layer):
             trainable=True,
         )
         self.proj = tf.keras.layers.Dense(features.shape[-1])
+        # proj is the equivalent of first attention
         self.attention = tf.keras.layers.MultiHeadAttention(
             num_heads=self.nheads, key_dim=features.shape[-1] // self.nheads
         )
