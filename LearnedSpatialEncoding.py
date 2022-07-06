@@ -16,16 +16,17 @@ class LearnedSpatialEncoding(tf.keras.layers.Layer):
 
         self.w = self.add_weight(
             name="encodings",
-            shape=(features.shape[-2], self.target_dim if self.target_dim is not None else features.shape[-1]),
+            shape=(
+                features.shape[-2],
+                self.target_dim if self.target_dim is not None else features.shape[-1],
+            ),
             initializer="orthogonal",
             trainable=True,
         )
 
     def get_config(self):
         config = super().get_config()
-        config.update({
-            "target_dim" : self.target_dim
-        })
+        config.update({"target_dim": self.target_dim})
         return config
 
     def call(self, features):
@@ -34,12 +35,13 @@ class LearnedSpatialEncoding(tf.keras.layers.Layer):
 
         return tf.repeat([self.w], [tf.shape(features)[0]], axis=0)
 
+
 # %%
 if __name__ == "__main__":
     dim = 16
     target = 19
     features = tf.keras.layers.Input(shape=(11, dim), name="features")
-    spatial_enc = LearnedSpatialEncoding(target_dim = target)(features)
+    spatial_enc = LearnedSpatialEncoding(target_dim=target)(features)
 
     model = tf.keras.models.Model([features], [spatial_enc])
     model.summary(150)

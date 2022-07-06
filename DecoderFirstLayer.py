@@ -1,7 +1,6 @@
 # %%
 import tensorflow as tf
 
-
 # %%
 
 # Use the _build_from_signature tricks:
