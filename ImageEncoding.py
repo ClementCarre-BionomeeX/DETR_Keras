@@ -2,7 +2,7 @@ import tensorflow as tf
 
 
 class ImageEncoding(tf.keras.layers.Layer):
-    def __init__(self, grid_dim, nqueries, *args, **kwargs) -> None:
+    def __init__(self, grid_dim, nqueries, margin: int = 0, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.grid_dim = grid_dim
         self.nqueries = nqueries
@@ -18,6 +18,7 @@ class ImageEncoding(tf.keras.layers.Layer):
             ),
             tf.float32,
         )
+        self.margin = margin
         self._built_from_signature = False
 
     def _build_from_signature(self, images):
@@ -47,13 +48,18 @@ class ImageEncoding(tf.keras.layers.Layer):
         return config
 
     @staticmethod
-    def _find_pos(image, pos, step, encoding):
+    def _find_pos(image, pos, step, margin, encoding):
         image_h = tf.cast(tf.shape(image)[0], tf.float32)
         image_w = tf.cast(tf.shape(image)[1], tf.float32)
-        h_start = tf.cast(image_h * pos[0], tf.int32)
-        h_end = tf.cast(image_h * (pos[0] + step), tf.int32)
-        w_start = tf.cast(image_w * pos[1], tf.int32)
-        w_end = tf.cast(image_w * (pos[1] + step), tf.int32)
+
+        h_start = tf.math.maximum(tf.cast(image_h * pos[0], tf.int32) - margin, 0)
+        h_end = tf.math.minimum(
+            tf.cast(image_h * (pos[0] + step), tf.int32) + margin, tf.shape(image)[0]
+        )
+        w_start = tf.math.maximum(tf.cast(image_w * pos[1], tf.int32) - margin, 0)
+        w_end = tf.math.minimum(
+            tf.cast(image_w * (pos[1] + step), tf.int32) + margin, tf.shape(image)[1]
+        )
 
         # add a batch dimension
         region = tf.reshape(
@@ -64,9 +70,9 @@ class ImageEncoding(tf.keras.layers.Layer):
         return tf.squeeze(encoding(region), axis=0)
 
     @staticmethod
-    def _find_all_pos(image, grid_dim, positions, encoding):
+    def _find_all_pos(image, grid_dim, positions, margin, encoding):
         def curried_find_pos(pos):
-            return ImageEncoding._find_pos(image, pos, 1 / grid_dim, encoding)
+            return ImageEncoding._find_pos(image, pos, 1 / grid_dim, margin, encoding)
 
         regions = tf.map_fn(curried_find_pos, positions, dtype=tf.float32)
 
@@ -78,7 +84,7 @@ class ImageEncoding(tf.keras.layers.Layer):
 
         def curried_find_all_pos(image):
             return ImageEncoding._find_all_pos(
-                image, self.grid_dim, self.positions, self.encodingmodel
+                image, self.grid_dim, self.positions, self.margin, self.encodingmodel
             )
 
         regions = tf.map_fn(curried_find_all_pos, images, dtype=tf.float32)
