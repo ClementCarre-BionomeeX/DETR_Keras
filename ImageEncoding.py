@@ -43,6 +43,7 @@ class ImageEncoding(tf.keras.layers.Layer):
             {
                 "nqueries": self.nqueries,
                 "grid_dim": self.grid_dim,
+                "margin": self.margin,
             }
         )
         return config
@@ -96,8 +97,9 @@ if __name__ == "__main__":
 
     grid = 16
     nq = 64
+    margin = 2
     image = tf.keras.layers.Input((None, None, 3))
-    encoding, positions = ImageEncoding(grid, nq)(image)
+    encoding, positions = ImageEncoding(grid, nq, margin=margin )(image)
 
     model = tf.keras.models.Model([image], [encoding, positions])
 
