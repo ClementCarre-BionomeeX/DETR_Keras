@@ -9,7 +9,9 @@ class SineSpatialEncoding(tf.keras.layers.Layer):
     def __init__(self, target_dim: int = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if target_dim is not None:
-            assert target_dim % 2 == 0, f"Error in SineSpatialEncoding: target_dim must be even, {target_dim} given"
+            assert (
+                target_dim % 2 == 0
+            ), f"Error in SineSpatialEncoding: target_dim must be even, {target_dim} given"
         self.target_dim = target_dim
         self._built_from_signature = False
 
@@ -20,20 +22,12 @@ class SineSpatialEncoding(tf.keras.layers.Layer):
 
     @staticmethod
     def _build_one_vector(pos, size):
-        omega = pos / ( 10000 ** ( tf.range(size // 2) * 2 / size ) )
-        return tf.reshape(
-            tf.transpose((
-                tf.math.sin(omega),
-                tf.math.cos(omega)
-            )),
-            [-1]
-        )
+        omega = pos / (10000 ** (tf.range(size // 2) * 2 / size))
+        return tf.reshape(tf.transpose((tf.math.sin(omega), tf.math.cos(omega))), [-1])
 
     def get_config(self):
         config = super().get_config()
-        config.update({
-            "target_dim" : self.target_dim
-        })
+        config.update({"target_dim": self.target_dim})
         return config
 
     def call(self, features):
@@ -43,16 +37,20 @@ class SineSpatialEncoding(tf.keras.layers.Layer):
         def curried_build_one_vector(pos):
             return SineSpatialEncoding._build_one_vector(pos, self.target_dim)
 
-        encodings = tf.map_fn(curried_build_one_vector, tf.cast(tf.range(tf.shape(features)[1]), tf.float64))
+        encodings = tf.map_fn(
+            curried_build_one_vector,
+            tf.cast(tf.range(tf.shape(features)[1]), tf.float64),
+        )
 
         return tf.repeat([encodings], [tf.shape(features)[0]], axis=0)
+
 
 # %%
 if __name__ == "__main__":
     dim = 16
     target = None
     features = tf.keras.layers.Input(shape=(11, dim), name="features")
-    spatial_enc = SineSpatialEncoding(target_dim = target)(features)
+    spatial_enc = SineSpatialEncoding(target_dim=target)(features)
 
     model = tf.keras.models.Model([features], [spatial_enc])
     model.summary(150)
