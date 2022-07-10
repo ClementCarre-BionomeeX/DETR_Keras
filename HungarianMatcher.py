@@ -1,8 +1,10 @@
 from builtins import print
+
 import tensorflow as tf
 
 from cdist import cdist
 from giou import box_giou
+
 
 @tf.function
 def _class_approx(output_probs, target_probs):

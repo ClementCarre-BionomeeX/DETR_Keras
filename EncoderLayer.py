@@ -58,9 +58,7 @@ if __name__ == "__main__":
         spatial_encodings=spatial_enc,
     )
 
-    model = tf.keras.models.Model(
-        [inputs, spatial_enc], [test_layer]
-    )
+    model = tf.keras.models.Model([inputs, spatial_enc], [test_layer])
 
     model.summary(150)
 

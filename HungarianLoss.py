@@ -2,9 +2,9 @@ from builtins import print
 
 import tensorflow as tf
 
-from cdist import cdist
 from giou import _calculate_giou
 from HungarianMatcher import hungarian_matcher
+
 
 def hungarianLoss(cost_class=1, cost_bbox=1, cost_giou=1):
 

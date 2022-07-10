@@ -99,7 +99,7 @@ if __name__ == "__main__":
     nq = 64
     margin = 2
     image = tf.keras.layers.Input((None, None, 3))
-    encoding, positions = ImageEncoding(grid, nq, margin=margin )(image)
+    encoding, positions = ImageEncoding(grid, nq, margin=margin)(image)
 
     model = tf.keras.models.Model([image], [encoding, positions])
 
