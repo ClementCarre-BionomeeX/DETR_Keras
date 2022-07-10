@@ -4,8 +4,6 @@ import tensorflow as tf
 
 @tf.function
 def _calculate_giou(b1, b2):
-    tf.print(f"  {b1.dtype}")
-    tf.print(f"  {b2.dtype}")
     zero = tf.convert_to_tensor(0.0, b1.dtype)
     b1_ymin, b1_xmin, b1_ymax, b1_xmax = tf.unstack(b1, 4, axis=-1)
     b2_ymin, b2_xmin, b2_ymax, b2_xmax = tf.unstack(b2, 4, axis=-1)
