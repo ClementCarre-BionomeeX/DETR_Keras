@@ -1,26 +1,39 @@
+from builtins import print
 import tensorflow as tf
 
 from cdist import cdist
 from giou import box_giou
 
+@tf.function
 def _class_approx(output_probs, target_probs):
     return -tf.gather(output_probs, tf.argmax(target_probs, -1), batch_dims=1, axis=-1)
 
+@tf.function
 def _bbox(output_bbox, target_bbox):
     return cdist(output_bbox, target_bbox)
 
+@tf.function
 def _giou(output_bbox, target_bbox):
     return box_giou(output_bbox, target_bbox)
 
 def hungarian_matcher(cost_class=1, cost_bbox=1, cost_giou=1):
     from scipy.optimize import linear_sum_assignment
 
+    @tf.function
+    def tf_linear_sum_assignement(cost_matrix):
+        return tf.numpy_function(func=linear_sum_assignment,inp=[cost_matrix],Tout=[tf.int64, tf.int64])
+
+    @tf.function
     def _internal_computation(output, target):
         cclap = _class_approx(output[..., 4:], target[..., 4:])
         cbbox = _bbox(output[..., :4], target[..., :4])
         cgiou = _giou(output[..., :4], target[..., :4])
         cost = cclap * cost_class + cbbox * cost_bbox + cgiou * cost_giou
-        return tf.stack([tf.stack(linear_sum_assignment(c)) for c in cost])
+
+        def stacking(matrix):
+            return tf.stack(tf_linear_sum_assignement(matrix))
+
+        return tf.map_fn(stacking, cost, fn_output_signature=tf.int64)
 
     return _internal_computation
 
@@ -31,6 +44,15 @@ if __name__ == "__main__":
     indices = hungarian_matcher(1, 1, 1)(output, target)
     print(indices)
 
+
+    out = tf.gather(output, indices[:, 0, :], batch_dims=1)
+    ta  = tf.gather(target, indices[:, 1, :], batch_dims=1)
+
+    print(target)
+    print(ta)
+
+
+
     # print(output)
     # print(target)
 
@@ -38,12 +60,15 @@ if __name__ == "__main__":
 
     # print(C)
 
-    # cclap = cost_class_approx(output[..., 4:], target[..., 4:])
-    # cbbox = cost_bbox(output[..., :4], target[..., :4])
-    # cgiou = cost_giou(output[..., :4], target[..., :4])
+    # cclap = _class_approx(output[..., 4:], target[..., 4:])
+    # cbbox = _bbox(output[..., :4], target[..., :4])
+    # cgiou = _giou(output[..., :4], target[..., :4])
     # print(cclap)
     # print(cbbox)
     # print(cgiou)
+
+
+
 
     # COST = cclap + cbbox + cgiou
     # print(COST)
