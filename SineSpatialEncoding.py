@@ -22,7 +22,7 @@ class SineSpatialEncoding(tf.keras.layers.Layer):
 
     @staticmethod
     def _build_one_vector(pos, size):
-        omega = pos / (10000 ** (tf.range(size // 2) * 2 / size))
+        omega = pos / tf.cast((10000 ** (tf.range(size // 2) * 2 / size)), tf.float32)
         return tf.reshape(tf.transpose((tf.math.sin(omega), tf.math.cos(omega))), [-1])
 
     def get_config(self):
@@ -39,7 +39,7 @@ class SineSpatialEncoding(tf.keras.layers.Layer):
 
         encodings = tf.map_fn(
             curried_build_one_vector,
-            tf.cast(tf.range(tf.shape(features)[1]), tf.float64),
+            tf.cast(tf.range(tf.shape(features)[1]), tf.float32),
         )
 
         return tf.repeat([encodings], [tf.shape(features)[0]], axis=0)
