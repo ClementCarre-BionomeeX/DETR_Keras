@@ -25,6 +25,7 @@ class DecoderLayer(tf.keras.layers.Layer):
         self.norm2 = tf.keras.layers.BatchNormalization()
 
         self.ffn = tf.keras.layers.Dense(queries.shape[-1])
+        self.act = tf.keras.layers.Activation("swish")
         self.norm3 = tf.keras.layers.BatchNormalization()
 
     def get_config(self):
@@ -58,7 +59,7 @@ class DecoderLayer(tf.keras.layers.Layer):
             + tmp
         )
 
-        return self.norm3(tmp + self.ffn(tmp))
+        return self.norm3(tmp + self.act(self.ffn(tmp)))
 
 
 # %%

@@ -20,6 +20,7 @@ class EncoderLayer(tf.keras.layers.Layer):
         self.norm1 = tf.keras.layers.BatchNormalization()
 
         self.ffn = tf.keras.layers.Dense(inputs.shape[-1])
+        self.act = tf.keras.layers.Activation("swish")
         self.norm2 = tf.keras.layers.BatchNormalization()
 
     def get_config(self):
@@ -44,7 +45,7 @@ class EncoderLayer(tf.keras.layers.Layer):
             + inputs
         )
 
-        return self.norm2(tmp + self.ffn(tmp))
+        return self.norm2(tmp + self.act(self.ffn(tmp)))
 
 
 # %%
