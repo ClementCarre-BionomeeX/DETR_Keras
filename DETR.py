@@ -71,6 +71,7 @@ def DETR(
             filters=backbone_dim, kernel_size=(1, 1), strides=(1, 2), padding="same"
         )(features)
         features = tf.keras.layers.Activation("swish")(features)
+        features = tf.keras.layers.BatchNormalization()(features)
 
     features = tf.keras.layers.Reshape([-1, backbone_dim], name="Features")(features)
 
