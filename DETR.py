@@ -59,7 +59,8 @@ def DETR(
     )(backbone)
 
     # features, positions (not used)
-    features, _ = ImageEncoding(
+    #features, _ = ImageEncoding(
+    features = ImageEncoding(
         encoding_grid_dim, encoding_nqueries, encoding_margin, name="Encoding"
     )(backbone)
 

@@ -90,7 +90,8 @@ class ImageEncoding(tf.keras.layers.Layer):
 
         regions = tf.map_fn(curried_find_all_pos, images, dtype=tf.float32)
 
-        return regions, self.positions
+        # return positions ??
+        return regions #, self.positions
 
 
 if __name__ == "__main__":
