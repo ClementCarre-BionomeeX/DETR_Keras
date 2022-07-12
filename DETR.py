@@ -27,6 +27,9 @@ def DETR(
     INPUT -> BACKBONE -> TRANSFORMER -> bbox  -> Concat
                                    |--> class   -^
     """
+
+    assert encoder_depth >= 2, f"encoder_depth must be greater or equal to 2, {encoder_depth} given"
+
     # input layer => images <None, None, 3>
     input_layer = tf.keras.layers.Input((None, None, 3), name="input_image")
 
