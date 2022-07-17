@@ -1,7 +1,5 @@
 # %%
-import copy
 import json
-from fileinput import filename
 
 import numpy as np
 import tensorflow as tf
@@ -108,73 +106,74 @@ class Datagenerator(tf.keras.utils.Sequence):
 
 
 # %%
+if __name__ == "__main__":
+    basepath = r"/home/ccarre/Documents/COCO"
+    annotspath = r"/annotations_trainval2017/annotations/"
+    trannotspath = r"instances_train2017.json"
+    vaannotspath = r"instances_val2017.json"
 
-basepath = r"/home/ccarre/Documents/COCO"
-annotspath = r"/annotations_trainval2017/annotations/"
-trannotspath = r"instances_train2017.json"
-vaannotspath = r"instances_val2017.json"
-
-trimagespath = r"/train2017/"
-vaimagespath = r"/val2017/"
+    trimagespath = r"/train2017/"
+    vaimagespath = r"/val2017/"
 
 
-# %%
-dg = Datagenerator(
-    basepath + trimagespath, basepath + annotspath + trannotspath, 9, 128
-)
+    # %%
+    dg = Datagenerator(
+        basepath + trimagespath, basepath + annotspath + trannotspath, 9, 128
+    )
 
-print(len(dg))
+    print(len(dg))
 
-import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt
 
-# %%
+    # %%
 
-dg.on_epoch_end()
+    dg.on_epoch_end()
 
-img, ann = dg[0]
+    img, ann = dg[0]
 
-fig = plt.figure(figsize=(15, 15))
+    fig = plt.figure(figsize=(15, 15))
 
-for i in range(9):
-    fig.add_subplot(3, 3, i + 1)
-    plt.imshow(img[i])
-    plt.axis("off")
+    for i in range(9):
+        fig.add_subplot(3, 3, i + 1)
+        plt.imshow(img[i])
+        plt.axis("off")
 
-# %%
+    print(dg.data["annotations"][0])
 
-# for k in dg.annotations_train.keys():
-#     print(k)
+    # %%
 
-# # %%
+    # for k in dg.annotations_train.keys():
+    #     print(k)
 
-# print([img for img in dg.annotations_train["images"] if img["id"] == dg.annotations_train["annotations"][0]["image_id"]])
+    # # %%
 
-# bbox = dg.annotations_train["annotations"][0]["bbox"]
-# # %%
+    # print([img for img in dg.annotations_train["images"] if img["id"] == dg.annotations_train["annotations"][0]["image_id"]])
 
-# import matplotlib.pyplot as plt
-# import matplotlib.patches as patches
+    # bbox = dg.annotations_train["annotations"][0]["bbox"]
+    # # %%
 
-# img = plt.imread(basepath + "/train2017/" + f'{dg.annotations_train["annotations"][0]["image_id"]:0>12}.jpg')
+    # import matplotlib.pyplot as plt
+    # import matplotlib.patches as patches
 
-# # Create figure and axes
-# fig, ax = plt.subplots()
+    # img = plt.imread(basepath + "/train2017/" + f'{dg.annotations_train["annotations"][0]["image_id"]:0>12}.jpg')
 
-# # Display the image
-# ax.imshow(img)
+    # # Create figure and axes
+    # fig, ax = plt.subplots()
 
-# # Create a Rectangle patch
-# rect = patches.Rectangle((bbox[0], bbox[1]), bbox[2], bbox[3], linewidth=1, edgecolor='r', facecolor='none')
+    # # Display the image
+    # ax.imshow(img)
 
-# # Add the patch to the Axes
-# ax.add_patch(rect)
+    # # Create a Rectangle patch
+    # rect = patches.Rectangle((bbox[0], bbox[1]), bbox[2], bbox[3], linewidth=1, edgecolor='r', facecolor='none')
 
-# plt.show()
+    # # Add the patch to the Axes
+    # ax.add_patch(rect)
 
-# # %%
+    # plt.show()
 
-# %%
+    # # %%
 
-print(dg.data["annotations"][0])
+    # %%
 
-# %%
+
+    # %%
