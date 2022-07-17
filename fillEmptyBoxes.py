@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-
+@tf.function
 def fillEmptyBoxes(A, B):
     B = tf.concat(
         [
