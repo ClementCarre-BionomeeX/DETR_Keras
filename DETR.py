@@ -27,6 +27,9 @@ def DETR(
     INPUT -> BACKBONE -> TRANSFORMER -> bbox  -> Concat
                                    |--> class   -^
     """
+
+    assert encoder_depth >= 2, f"encoder_depth must be greater or equal to 2, {encoder_depth} given"
+
     # input layer => images <None, None, 3>
     input_layer = tf.keras.layers.Input((None, None, 3), name="input_image")
 
@@ -59,7 +62,8 @@ def DETR(
     )(backbone)
 
     # features, positions (not used)
-    features, _ = ImageEncoding(
+    #features, _ = ImageEncoding(
+    features = ImageEncoding(
         encoding_grid_dim, encoding_nqueries, encoding_margin, name="Encoding"
     )(backbone)
 
@@ -70,6 +74,7 @@ def DETR(
             filters=backbone_dim, kernel_size=(1, 1), strides=(1, 2), padding="same"
         )(features)
         features = tf.keras.layers.Activation("swish")(features)
+        features = tf.keras.layers.BatchNormalization()(features)
 
     features = tf.keras.layers.Reshape([-1, backbone_dim], name="Features")(features)
 
