@@ -8,7 +8,9 @@ import tensorflow as tf
 
 
 class Datagenerator(tf.keras.utils.Sequence):
-    def __init__(self, tr_images_path, tr_annots_path, batchsize, nqueries, *args, **kwargs):
+    def __init__(
+        self, tr_images_path, tr_annots_path, batchsize, nqueries, *args, **kwargs
+    ):
         super().__init__(*args, **kwargs)
 
         self.images_path = tr_images_path
@@ -26,9 +28,7 @@ class Datagenerator(tf.keras.utils.Sequence):
 
         self.nqueries = nqueries
 
-        self.size_list = [
-            128, 256, 334, 480, 512, 640
-        ]
+        self.size_list = [128, 256, 334, 480, 512, 640]
 
         self.on_epoch_end()
 
@@ -41,10 +41,20 @@ class Datagenerator(tf.keras.utils.Sequence):
         h, w = np.random.choice(self.size_list, 2, replace=True)
 
         X = np.zeros((self.batchsize, h, w, 3), dtype=np.uint8)
-        Y = np.zeros((self.batchsize, self.nqueries, 4 + 1 + len(self.id_to_idx_dict)), dtype=np.float32)
+        Y = np.zeros(
+            (self.batchsize, self.nqueries, 4 + 1 + len(self.id_to_idx_dict)),
+            dtype=np.float32,
+        )
 
         for i in range(self.batchsize):
-            X[i, ], Y[i, ] = self._get_datum(indexes[i], (h, w))
+            (
+                X[
+                    i,
+                ],
+                Y[
+                    i,
+                ],
+            ) = self._get_datum(indexes[i], (h, w))
 
         return X, Y
 
@@ -80,7 +90,10 @@ class Datagenerator(tf.keras.utils.Sequence):
         for i in range(self.nqueries - len(annots)):
             annots.append(
                 [
-                    0, 0, 0, 0,
+                    0,
+                    0,
+                    0,
+                    0,
                     *tf.keras.utils.to_categorical(
                         0,
                         num_classes=len(self.id_to_idx_dict) + 1,
@@ -106,7 +119,9 @@ vaimagespath = r"/val2017/"
 
 
 # %%
-dg = Datagenerator(basepath + trimagespath, basepath + annotspath + trannotspath, 9, 128)
+dg = Datagenerator(
+    basepath + trimagespath, basepath + annotspath + trannotspath, 9, 128
+)
 
 print(len(dg))
 
@@ -123,7 +138,7 @@ fig = plt.figure(figsize=(15, 15))
 for i in range(9):
     fig.add_subplot(3, 3, i + 1)
     plt.imshow(img[i])
-    plt.axis('off')
+    plt.axis("off")
 
 # %%
 

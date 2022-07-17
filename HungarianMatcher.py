@@ -10,20 +10,25 @@ from giou import box_giou
 def _class_approx(output_probs, target_probs):
     return -tf.gather(output_probs, tf.argmax(target_probs, -1), batch_dims=1, axis=-1)
 
+
 @tf.function
 def _bbox(output_bbox, target_bbox):
     return cdist(output_bbox, target_bbox)
 
+
 @tf.function
 def _giou(output_bbox, target_bbox):
     return box_giou(output_bbox, target_bbox)
+
 
 def hungarian_matcher(cost_class=1, cost_bbox=1, cost_giou=1):
     from scipy.optimize import linear_sum_assignment
 
     @tf.function
     def tf_linear_sum_assignement(cost_matrix):
-        return tf.numpy_function(func=linear_sum_assignment,inp=[cost_matrix],Tout=[tf.int64, tf.int64])
+        return tf.numpy_function(
+            func=linear_sum_assignment, inp=[cost_matrix], Tout=[tf.int64, tf.int64]
+        )
 
     @tf.function
     def _internal_computation(output, target):
@@ -39,21 +44,19 @@ def hungarian_matcher(cost_class=1, cost_bbox=1, cost_giou=1):
 
     return _internal_computation
 
+
 if __name__ == "__main__":
-    output = tf.random.uniform((3, 5, 4+7))
-    target = tf.random.uniform((3, 5, 4+7))
+    output = tf.random.uniform((3, 5, 4 + 7))
+    target = tf.random.uniform((3, 5, 4 + 7))
 
     indices = hungarian_matcher(1, 1, 1)(output, target)
     print(indices)
 
-
     out = tf.gather(output, indices[:, 0, :], batch_dims=1)
-    ta  = tf.gather(target, indices[:, 1, :], batch_dims=1)
+    ta = tf.gather(target, indices[:, 1, :], batch_dims=1)
 
     print(target)
     print(ta)
-
-
 
     # print(output)
     # print(target)
@@ -69,9 +72,6 @@ if __name__ == "__main__":
     # print(cbbox)
     # print(cgiou)
 
-
-
-
     # COST = cclap + cbbox + cgiou
     # print(COST)
 
@@ -80,11 +80,6 @@ if __name__ == "__main__":
     # indices = tf.stack([tf.stack(linear_sum_assignment(C)) for C in COST])
 
     # print(indices)
-
-
-
-
-
 
 
 # def hungarianLoss(
@@ -103,8 +98,6 @@ if __name__ == "__main__":
 #     cost_bbox: float = 1,
 #     cost_giou: float = 1,):
 #         return _hungarianLoss()
-
-
 
 
 # def _hungarianLoss(
@@ -136,7 +129,6 @@ if __name__ == "__main__":
 # def loss_label(ytrue, ypred, indices, num_boxes):
 
 #     indices = tf.stop_gradient(_hungarian_matcher(ytrue, ypred))
-
 
 
 # def _hungarian_matcher_on_batch(

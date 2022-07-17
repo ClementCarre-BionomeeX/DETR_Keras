@@ -7,10 +7,11 @@ from HungarianMatcher import hungarian_matcher
 
 
 def hungarianLoss(cost_class=1, cost_bbox=1, cost_giou=1):
-
     @tf.function
     def _internal_computation(ytrue, ypred):
-        indices = tf.stop_gradient(hungarian_matcher(cost_class, cost_bbox, cost_giou)(ypred, ytrue))
+        indices = tf.stop_gradient(
+            hungarian_matcher(cost_class, cost_bbox, cost_giou)(ypred, ytrue)
+        )
         outputs = tf.gather(ypred, indices[:, 0, :], batch_dims=1)
         targets = tf.gather(ytrue, indices[:, 1, :], batch_dims=1)
         # hypothesis => same number of boxes for outputs and targets
@@ -33,12 +34,17 @@ def hungarianLoss(cost_class=1, cost_bbox=1, cost_giou=1):
         )
 
         # L1 box loss
-        l1lossfunction = lambda i: tf.reduce_sum(tf.abs(outputs[i, ..., :4] - targets[i, ..., :4]), axis=-1)
-        l1_loss = tf.reduce_mean(tf.map_fn(
-            l1lossfunction,
-            tf.range(tf.shape(outputs)[0]),
-            fn_output_signature=tf.float32,
-        ), axis=-1)
+        l1lossfunction = lambda i: tf.reduce_sum(
+            tf.abs(outputs[i, ..., :4] - targets[i, ..., :4]), axis=-1
+        )
+        l1_loss = tf.reduce_mean(
+            tf.map_fn(
+                l1lossfunction,
+                tf.range(tf.shape(outputs)[0]),
+                fn_output_signature=tf.float32,
+            ),
+            axis=-1,
+        )
 
         return giou_loss * cost_giou + label_loss * cost_class + l1_loss * cost_bbox
 
